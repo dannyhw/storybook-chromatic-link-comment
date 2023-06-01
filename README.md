@@ -25,8 +25,21 @@ boolean indicating if the comment was posted successfully.
 ## Example usage
 
 ```yaml
-uses: actions/hello-world-javascript-action
-with:
-  app-id: ${{ secrets.CHROMATIC_APP_ID }}
-  github-token: ${{ secrets.GITHUB_TOKEN }}
+name: 'comment with storybook link'
+
+on:
+  pull_request:
+    types: opened
+
+permissions:
+  pull-requests: write
+
+jobs:
+  chromatic-link-comment:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/hello-world-javascript-action@v0.3
+        with:
+          app-id: ${{ secrets.CHROMATIC_APP_ID }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 ```

@@ -1,5 +1,11 @@
 name: 'test on pr'
-on: pull_request
+
+on:
+  pull_request:
+    types: opened
+
+permissions:
+  pull-requests: write
 
 jobs:
   build: # make sure build/ci work properly

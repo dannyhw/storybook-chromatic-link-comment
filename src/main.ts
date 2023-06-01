@@ -28,11 +28,7 @@ async function run(): Promise<void> {
 
     if (!branchName) throw new Error('Could not find branch name')
 
-    const comment = `
-      ${commentFindBy}
-
-      Heres the [storybook](https://${branchName}--${appId}.chromatic.com) for your branch
-    `
+    const comment = `${commentFindBy}\nHeres the [storybook](https://${branchName}--${appId}.chromatic.com) for your branch`
 
     const {data: comments} = await octokit.issues.listComments({
       owner,
