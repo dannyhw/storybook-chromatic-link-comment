@@ -59,11 +59,7 @@ function run() {
             const branchName = (_a = payload.pull_request) === null || _a === void 0 ? void 0 : _a.head.ref.replace('refs/heads/', '').replace('/', '-');
             if (!branchName)
                 throw new Error('Could not find branch name');
-            const comment = `
-      ${commentFindBy}
-
-      Heres the [storybook](https://${branchName}--${appId}.chromatic.com) for your branch
-    `;
+            const comment = `${commentFindBy}\nHeres the [storybook](https://${branchName}--${appId}.chromatic.com) for your branch`;
             const { data: comments } = yield octokit.issues.listComments({
                 owner,
                 repo,
