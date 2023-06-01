@@ -38,7 +38,7 @@ jobs:
   chromatic-link-comment:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/hello-world-javascript-action@v0.3
+      - uses: actions/storybook-chromatic-link-comment@v0.3
         with:
           app-id: ${{ secrets.CHROMATIC_APP_ID }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
