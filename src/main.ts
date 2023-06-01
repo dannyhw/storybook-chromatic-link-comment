@@ -1,16 +1,68 @@
 import * as core from '@actions/core'
-import {wait} from './wait'
+import * as github from '@actions/github'
+import {Octokit} from '@octokit/rest'
 
 async function run(): Promise<void> {
   try {
-    const ms: string = core.getInput('milliseconds')
-    core.debug(`Waiting ${ms} milliseconds ...`) // debug is only output if you set the secret `ACTIONS_STEP_DEBUG` to true
+    const token = core.getInput('github-token')
+    const appId: string = core.getInput('app-id')
 
-    core.debug(new Date().toTimeString())
-    await wait(parseInt(ms, 10))
-    core.debug(new Date().toTimeString())
+    if (!token) throw new Error('github-token is required')
+    if (!appId) throw new Error('appId is required')
 
-    core.setOutput('time', new Date().toTimeString())
+    const octokit = new Octokit({auth: `token ${token}`})
+
+    const {
+      repo: {repo, owner},
+      issue: {number},
+      payload
+    } = github.context
+
+    core.debug(`Using appid: ${appId}`) // debug is only output if you set the secret `ACTIONS_STEP_DEBUG` to true
+
+    const commentFindBy = `<!-- Created by storybook-chromatic-link-comment -->`
+
+    const branchName = payload.pull_request?.head.ref
+      .replace('refs/heads/', '')
+      .replace('/', '-')
+
+    if (!branchName) throw new Error('Could not find branch name')
+
+    const comment = `
+      ${commentFindBy}
+
+      Heres the [storybook](https://${branchName}--${appId}.chromatic.com) for your branch
+    `
+
+    const {data: comments} = await octokit.issues.listComments({
+      owner,
+      repo,
+      issue_number: number,
+      per_page: 100
+    })
+
+    const existingComment = comments.find(({body}) =>
+      body?.includes(commentFindBy)
+    )
+
+    if (!existingComment && comments.length < 100) {
+      core.info(`Leaving comment: ${comment}`)
+
+      octokit.issues.createComment({
+        issue_number: number,
+        owner,
+        repo,
+        body: comment
+      })
+    } else {
+      core.info(
+        `Found existing comment or number of comments is over 100
+         hasExistingComment: ${!!existingComment},
+         length: ${comments.length}`
+      )
+    }
+
+    core.setOutput('success', true)
   } catch (error) {
     if (error instanceof Error) core.setFailed(error.message)
   }

@@ -1,11 +1,13 @@
-name: 'Your name here'
-description: 'Provide a description here'
-author: 'Your name or organization here'
+name: 'storybook-chromatic-link-comment'
+description: 'Leaves a comment with a link to storybook for the branch of a pr'
+author: 'Daniel Williams'
 inputs:
-  milliseconds: # change this
+  github-token:
     required: true
-    description: 'input description here'
-    default: 'default value if applicable'
+    description: 'Token used to authenticate with the GitHub API'
+  app-id:
+    required: true
+    description: 'Your chromatic app id used to create the link'
 runs:
   using: 'node16'
   main: 'dist/index.js'
