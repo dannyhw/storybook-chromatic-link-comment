@@ -1,6 +1,8 @@
 name: 'storybook-chromatic-link-comment'
 description: 'Leaves a comment with a link to storybook for the branch of a pr'
 author: 'Daniel Williams'
+color: 'pink'
+icon: 'book-open'
 inputs:
   github-token:
     required: true

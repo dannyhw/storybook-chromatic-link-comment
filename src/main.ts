@@ -1,6 +1,7 @@
 import * as core from '@actions/core'
 import * as github from '@actions/github'
 import {Octokit} from '@octokit/rest'
+import fetch from 'node-fetch'
 
 async function run(): Promise<void> {
   try {
@@ -10,7 +11,7 @@ async function run(): Promise<void> {
     if (!token) throw new Error('github-token is required')
     if (!appId) throw new Error('appId is required')
 
-    const octokit = new Octokit({auth: `token ${token}`})
+    const octokit = new Octokit({auth: `token ${token}`, request: {fetch}})
 
     const {
       repo: {repo, owner},
@@ -37,8 +38,8 @@ async function run(): Promise<void> {
       per_page: 100
     })
 
-    const existingComment = comments.find(({body}) =>
-      body?.includes(commentFindBy)
+    const existingComment = comments.find(
+      ({body}) => body?.includes(commentFindBy)
     )
 
     if (!existingComment && comments.length < 100) {
