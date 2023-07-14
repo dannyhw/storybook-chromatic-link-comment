@@ -37,8 +37,8 @@ async function run(): Promise<void> {
       per_page: 100
     })
 
-    const existingComment = comments.find(({body}) =>
-      body?.includes(commentFindBy)
+    const existingComment = comments.find(
+      ({body}) => body?.includes(commentFindBy)
     )
 
     if (!existingComment && comments.length < 100) {
