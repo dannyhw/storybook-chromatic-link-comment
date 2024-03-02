@@ -23,7 +23,7 @@ The best way is to hydrate it with chromatic's job output: `${{ steps.chromatic.
 URL address to the build.
 It is the page `https://${branchName}--${appId}.chromatic.com`
 
-The best way is to hydrate it with chromatic's job output: `${{ steps.chromatic.outputs.buildUrl }}`
+The best way is to hydrate it with chromatic's job output: `${{ steps.chromatic.outputs.storybookUrl }}`
 
 ### `app-id`
 
