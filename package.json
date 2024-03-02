@@ -1,8 +1,8 @@
 {
-  "name": "typescript-action",
-  "version": "0.0.6",
+  "name": "storybook-chromatic-link-comment",
+  "version": "0.0.7",
   "private": true,
-  "description": "TypeScript template action",
+  "description": "Automation",
   "main": "lib/main.js",
   "scripts": {
     "build": "tsc",
@@ -14,7 +14,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/actions/typescript-action.git"
+    "url": "git+https://github.com/guyzmo/storybook-chromatic-link-comment.git"
   },
   "keywords": [
     "actions",
