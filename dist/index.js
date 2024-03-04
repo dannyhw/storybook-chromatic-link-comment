@@ -52,18 +52,38 @@ function run() {
         try {
             const token = core.getInput('github-token');
             const appId = core.getInput('app-id');
-            if (!token)
+            const reviewUrl = core.getInput('review-url');
+            const buildUrlInput = core.getInput('build-url');
+            const storybookUrlInput = core.getInput('storybook-url');
+            if (!token) {
                 throw new Error('github-token is required');
-            if (!appId)
-                throw new Error('appId is required');
-            const octokit = new rest_1.Octokit({ auth: `token ${token}`, request: { fetch: node_fetch_1.default } });
+            }
+            if ((!buildUrlInput || !storybookUrlInput) && !appId) {
+                throw new Error('app-id is required, when build-url and storybook-url are not provided');
+            }
             const { repo: { repo, owner }, issue: { number }, payload } = github.context;
-            core.debug(`Using appid: ${appId}`); // debug is only output if you set the secret `ACTIONS_STEP_DEBUG` to true
-            const commentFindBy = `<!-- Created by storybook-chromatic-link-comment -->`;
             const branchName = (_a = payload.pull_request) === null || _a === void 0 ? void 0 : _a.head.ref.replace('refs/heads/', '').replace('/', '-');
             if (!branchName)
                 throw new Error('Could not find branch name');
-            const comment = `${commentFindBy}\nHeres the [storybook](https://${branchName}--${appId}.chromatic.com) for your branch`;
+            // fallback to using the app-id based url
+            const buildUrl = buildUrlInput !== null && buildUrlInput !== void 0 ? buildUrlInput : `https://www.chromatic.com/build?appId=${appId}`;
+            const storybookUrl = storybookUrlInput !== null && storybookUrlInput !== void 0 ? storybookUrlInput : `https://${branchName}--${appId}.chromatic.com`;
+            const octokit = new rest_1.Octokit({ auth: `token ${token}`, request: { fetch: node_fetch_1.default } });
+            core.debug(`Using appid: ${appId}`); // debug is only output if you set the secret `ACTIONS_STEP_DEBUG` to true
+            const commentFindBy = `<!-- Created by storybook-chromatic-link-comment -->`;
+            const comment = `${commentFindBy}
+## 🔍 Visual review for your branch is published 🔍
+
+Here are the links to:
+
+${reviewUrl
+                ? `
+- the [Visual Review Page](${reviewUrl})
+`
+                : ``}
+- the [latest build on chromatic](${buildUrl})
+- the [full storybook](${storybookUrl})
+`;
             const { data: comments } = yield octokit.issues.listComments({
                 owner,
                 repo,

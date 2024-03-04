@@ -11,15 +11,15 @@ async function run(): Promise<void> {
     const buildUrlInput: string = core.getInput('build-url')
     const storybookUrlInput: string = core.getInput('storybook-url')
 
-    if (!token) throw new Error('github-token is required')
-    if (!buildUrlInput || !storybookUrlInput) && !appId)
-      throw new Error('app-id is required, when build-url and storybook-url are not provided')
+    if (!token) {
+      throw new Error('github-token is required')
+    }
 
-    // fallback to using the app-id based url
-    const buildUrl = buildUrlInput ?? `https://www.chromatic.com/build?appId=${appId}`
-    const storybookUrl = storybookUrlInput ?? `https://${branchName}--${appId}.chromatic.com`
-
-    const octokit = new Octokit({auth: `token ${token}`, request: {fetch}})
+    if ((!buildUrlInput || !storybookUrlInput) && !appId) {
+      throw new Error(
+        'app-id is required, when build-url and storybook-url are not provided'
+      )
+    }
 
     const {
       repo: {repo, owner},
@@ -27,24 +27,36 @@ async function run(): Promise<void> {
       payload
     } = github.context
 
-    core.debug(`Using appid: ${appId}`) // debug is only output if you set the secret `ACTIONS_STEP_DEBUG` to true
-
-    const commentFindBy = `<!-- Created by storybook-chromatic-link-comment -->`
-
     const branchName = payload.pull_request?.head.ref
       .replace('refs/heads/', '')
       .replace('/', '-')
 
     if (!branchName) throw new Error('Could not find branch name')
 
+    // fallback to using the app-id based url
+    const buildUrl =
+      buildUrlInput ?? `https://www.chromatic.com/build?appId=${appId}`
+    const storybookUrl =
+      storybookUrlInput ?? `https://${branchName}--${appId}.chromatic.com`
+
+    const octokit = new Octokit({auth: `token ${token}`, request: {fetch}})
+
+    core.debug(`Using appid: ${appId}`) // debug is only output if you set the secret `ACTIONS_STEP_DEBUG` to true
+
+    const commentFindBy = `<!-- Created by storybook-chromatic-link-comment -->`
+
     const comment = `${commentFindBy}
 ## 🔍 Visual review for your branch is published 🔍
 
 Here are the links to:
 
-${!!reviewUrl ? `
+${
+  reviewUrl
+    ? `
 - the [Visual Review Page](${reviewUrl})
-` : ``}
+`
+    : ``
+}
 - the [latest build on chromatic](${buildUrl})
 - the [full storybook](${storybookUrl})
 `
