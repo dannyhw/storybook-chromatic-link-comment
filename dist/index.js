@@ -78,6 +78,7 @@ function run() {
             const buildUrl = buildUrlInput !== null && buildUrlInput !== void 0 ? buildUrlInput : `https://www.chromatic.com/build?appId=${appId}`;
             const branchStorybookUrl = `https://${branchName}--${appId}.chromatic.com`;
             const storybookUrl = storybookUrlInput !== null && storybookUrlInput !== void 0 ? storybookUrlInput : branchStorybookUrl;
+            core.info(`creating octokit client`);
             const octokit = new rest_1.Octokit({ auth: `token ${token}`, request: { fetch: node_fetch_1.default } });
             core.debug(`Using appid: ${appId}`); // debug is only output if you set the secret `ACTIONS_STEP_DEBUG` to true
             const commentFindBy = `<!-- Created by storybook-chromatic-link-comment -->`;
@@ -95,6 +96,7 @@ ${reviewUrl
 - the [full storybook](${storybookUrl})
 - the [branch specific storybook](${branchStorybookUrl})
 `;
+            core.info(`Fetching comments for issue: ${number}`);
             const { data: comments } = yield octokit.issues.listComments({
                 owner,
                 repo,
@@ -111,7 +113,7 @@ ${reviewUrl
                     body: comment
                 });
             }
-            else if (existingComment) {
+            else if (existingComment && comments.length < 100) {
                 core.info(`attempting to update existing comment: ${existingComment.id}`);
                 yield octokit.issues.updateComment({
                     comment_id: existingComment.id,
