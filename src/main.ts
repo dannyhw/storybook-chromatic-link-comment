@@ -24,12 +24,20 @@ async function run(): Promise<void> {
     const {
       repo: {repo, owner},
       issue: {number},
-      payload
+      ref
     } = github.context
 
-    const branchName = payload.pull_request?.head.ref
-      .replace('refs/heads/', '')
-      .replace('/', '-')
+    let branch: string | undefined
+    if (github.context.eventName === 'pull_request') {
+      branch = process.env.GITHUB_HEAD_REF
+    } else {
+      // Other events where we have to extract branch from the ref
+      // Ref example: refs/heads/master, refs/tags/X
+      const branchParts = ref.split('/')
+      branch = branchParts.slice(2).join('/')
+    }
+
+    const branchName = branch?.replace('refs/heads/', '').replace('/', '-')
 
     if (!branchName) throw new Error('Could not find branch name')
 
