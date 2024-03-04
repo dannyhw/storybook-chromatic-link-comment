@@ -67,7 +67,7 @@ jobs:
           exitOnceUploaded: true
 
       - name: Publish Storybook Link in the comments
-        uses: dannyhw/storybook-chromatic-link-comment@v0.8
+        uses: dannyhw/storybook-chromatic-link-comment@v0.9
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           review-url: ${{ steps.chromatic.outputs.url }}
@@ -92,7 +92,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Storybook Link
-        uses: dannyhw/storybook-chromatic-link-comment@v0.8
+        uses: dannyhw/storybook-chromatic-link-comment@v0.9
         with:
           app-id: ${{ secrets.CHROMATIC_APP_ID }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
