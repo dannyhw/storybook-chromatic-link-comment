@@ -24,6 +24,7 @@ async function run(): Promise<void> {
     const {
       repo: {repo, owner},
       issue: {number},
+
       ref
     } = github.context
 
@@ -46,7 +47,7 @@ async function run(): Promise<void> {
       buildUrlInput ?? `https://www.chromatic.com/build?appId=${appId}`
     const branchStorybookUrl = `https://${branchName}--${appId}.chromatic.com`
     const storybookUrl = storybookUrlInput ?? branchStorybookUrl
-
+    core.info(`creating octokit client`)
     const octokit = new Octokit({auth: `token ${token}`, request: {fetch}})
 
     core.debug(`Using appid: ${appId}`) // debug is only output if you set the secret `ACTIONS_STEP_DEBUG` to true
@@ -69,7 +70,7 @@ ${
 - the [full storybook](${storybookUrl})
 - the [branch specific storybook](${branchStorybookUrl})
 `
-
+    core.info(`Fetching comments for issue: ${number}`)
     const {data: comments} = await octokit.issues.listComments({
       owner,
       repo,
@@ -90,7 +91,7 @@ ${
         repo,
         body: comment
       })
-    } else if (existingComment) {
+    } else if (existingComment && comments.length < 100) {
       core.info(`attempting to update existing comment: ${existingComment.id}`)
       await octokit.issues.updateComment({
         comment_id: existingComment.id,
