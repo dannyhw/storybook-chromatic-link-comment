@@ -90,6 +90,13 @@ ${
         repo,
         body: comment
       })
+    } else if (existingComment) {
+      octokit.issues.updateComment({
+        comment_id: existingComment.id,
+        owner,
+        repo,
+        body: comment
+      })
     } else {
       core.info(
         `Found existing comment or number of comments is over 100
