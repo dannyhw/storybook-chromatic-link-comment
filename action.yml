@@ -7,8 +7,17 @@ inputs:
   github-token:
     required: true
     description: 'Token used to authenticate with the GitHub API'
+  review-url:
+    required: false
+    description: 'URL address to the visual review page. (steps.chromatic.outputs.url)'
+  build-url:
+    required: false
+    description: 'URL address to the build page. (steps.chromatic.outputs.buildUrl)'
+  storybook-url:
+    required: false
+    description: 'URL address to the storybook page. (steps.chromatic.outputs.storybookUrl)'
   app-id:
-    required: true
+    required: false
     description: 'Your chromatic app id used to create the link'
 runs:
   using: 'node16'
