@@ -44,8 +44,8 @@ async function run(): Promise<void> {
     // fallback to using the app-id based url
     const buildUrl =
       buildUrlInput ?? `https://www.chromatic.com/build?appId=${appId}`
-    const storybookUrl =
-      storybookUrlInput ?? `https://${branchName}--${appId}.chromatic.com`
+    const branchStorybookUrl = `https://${branchName}--${appId}.chromatic.com`
+    const storybookUrl = storybookUrlInput ?? branchStorybookUrl
 
     const octokit = new Octokit({auth: `token ${token}`, request: {fetch}})
 
@@ -67,6 +67,7 @@ ${
 }
 - the [latest build on chromatic](${buildUrl})
 - the [full storybook](${storybookUrl})
+- the [branch specific storybook](${branchStorybookUrl})
 `
 
     const {data: comments} = await octokit.issues.listComments({
