@@ -28,6 +28,11 @@ async function run(): Promise<void> {
       ref
     } = github.context
 
+    if (!number)
+      throw new Error(
+        'No issue number found preventing any comment from being added or updated. This will happen if your action is ran on push and not on a pull_request event.'
+      )
+
     let branch: string | undefined
     if (github.context.eventName === 'pull_request') {
       branch = process.env.GITHUB_HEAD_REF
@@ -38,7 +43,10 @@ async function run(): Promise<void> {
       branch = branchParts.slice(2).join('/')
     }
 
-    const branchName = branch?.replace('refs/heads/', '').replace('/', '-')
+    const branchName = branch
+      ?.replace('refs/heads/', '')
+      .replace('/', '-')
+      .substr(0, 37)
 
     if (!branchName) throw new Error('Could not find branch name')
 
@@ -68,9 +76,16 @@ ${
 }
 - the [latest build on chromatic](${buildUrl})
 - the [full storybook](${storybookUrl})
+${
+  appId
+    ? `
 - the [branch specific storybook](${branchStorybookUrl})
 `
-    core.info(`Fetching comments for issue: ${github.context.issue.number}`)
+    : ``
+}
+`
+
+    core.debug(`owner: ${owner}, repo: ${repo}, issue_number: ${number}`)
     const {data: comments} = await octokit.issues.listComments({
       owner,
       repo,

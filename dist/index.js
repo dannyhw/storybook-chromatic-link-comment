@@ -61,6 +61,8 @@ function run() {
                 throw new Error('app-id is required, when build-url and storybook-url are not provided');
             }
             const { repo: { repo, owner }, issue: { number }, ref } = github.context;
+            if (!number)
+                throw new Error('No issue number found preventing any comment from being added or updated. This will happen if your action is ran on push and not on a pull_request event.');
             let branch;
             if (github.context.eventName === 'pull_request') {
                 branch = process.env.GITHUB_HEAD_REF;
@@ -71,7 +73,7 @@ function run() {
                 const branchParts = ref.split('/');
                 branch = branchParts.slice(2).join('/');
             }
-            const branchName = branch === null || branch === void 0 ? void 0 : branch.replace('refs/heads/', '').replace('/', '-');
+            const branchName = branch === null || branch === void 0 ? void 0 : branch.replace('refs/heads/', '').replace('/', '-').substr(0, 37);
             if (!branchName)
                 throw new Error('Could not find branch name');
             // fallback to using the app-id based url
@@ -94,9 +96,13 @@ ${reviewUrl
                 : ``}
 - the [latest build on chromatic](${buildUrl})
 - the [full storybook](${storybookUrl})
+${appId
+                ? `
 - the [branch specific storybook](${branchStorybookUrl})
+`
+                : ``}
 `;
-            core.info(`Fetching comments for issue: ${github.context.issue.number}`);
+            core.debug(`owner: ${owner}, repo: ${repo}, issue_number: ${number}`);
             const { data: comments } = yield octokit.issues.listComments({
                 owner,
                 repo,
