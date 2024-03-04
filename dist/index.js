@@ -47,7 +47,6 @@ const github = __importStar(__nccwpck_require__(5438));
 const rest_1 = __nccwpck_require__(5375);
 const node_fetch_1 = __importDefault(__nccwpck_require__(1793));
 function run() {
-    var _a;
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const token = core.getInput('github-token');
@@ -61,13 +60,24 @@ function run() {
             if ((!buildUrlInput || !storybookUrlInput) && !appId) {
                 throw new Error('app-id is required, when build-url and storybook-url are not provided');
             }
-            const { repo: { repo, owner }, issue: { number }, payload } = github.context;
-            const branchName = (_a = payload.pull_request) === null || _a === void 0 ? void 0 : _a.head.ref.replace('refs/heads/', '').replace('/', '-');
+            const { repo: { repo, owner }, issue: { number }, ref } = github.context;
+            let branch;
+            if (github.context.eventName === 'pull_request') {
+                branch = process.env.GITHUB_HEAD_REF;
+            }
+            else {
+                // Other events where we have to extract branch from the ref
+                // Ref example: refs/heads/master, refs/tags/X
+                const branchParts = ref.split('/');
+                branch = branchParts.slice(2).join('/');
+            }
+            const branchName = branch === null || branch === void 0 ? void 0 : branch.replace('refs/heads/', '').replace('/', '-');
             if (!branchName)
                 throw new Error('Could not find branch name');
             // fallback to using the app-id based url
             const buildUrl = buildUrlInput !== null && buildUrlInput !== void 0 ? buildUrlInput : `https://www.chromatic.com/build?appId=${appId}`;
-            const storybookUrl = storybookUrlInput !== null && storybookUrlInput !== void 0 ? storybookUrlInput : `https://${branchName}--${appId}.chromatic.com`;
+            const branchStorybookUrl = `https://${branchName}--${appId}.chromatic.com`;
+            const storybookUrl = storybookUrlInput !== null && storybookUrlInput !== void 0 ? storybookUrlInput : branchStorybookUrl;
             const octokit = new rest_1.Octokit({ auth: `token ${token}`, request: { fetch: node_fetch_1.default } });
             core.debug(`Using appid: ${appId}`); // debug is only output if you set the secret `ACTIONS_STEP_DEBUG` to true
             const commentFindBy = `<!-- Created by storybook-chromatic-link-comment -->`;
@@ -83,6 +93,7 @@ ${reviewUrl
                 : ``}
 - the [latest build on chromatic](${buildUrl})
 - the [full storybook](${storybookUrl})
+- the [branch specific storybook](${branchStorybookUrl})
 `;
             const { data: comments } = yield octokit.issues.listComments({
                 owner,
@@ -95,6 +106,14 @@ ${reviewUrl
                 core.info(`Leaving comment: ${comment}`);
                 octokit.issues.createComment({
                     issue_number: number,
+                    owner,
+                    repo,
+                    body: comment
+                });
+            }
+            else if (existingComment) {
+                octokit.issues.updateComment({
+                    comment_id: existingComment.id,
                     owner,
                     repo,
                     body: comment
