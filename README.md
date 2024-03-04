@@ -60,6 +60,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Publish to Chromatic
+        id: chromatic
         uses: chromaui/action@latest
         with:
           projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
