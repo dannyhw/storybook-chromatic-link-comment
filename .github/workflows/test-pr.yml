@@ -23,4 +23,7 @@ jobs:
       - uses: ./
         with:
           app-id: bla
+          storybook-url: bla
+          build-url: bla
+          review-url: bla
           github-token: ${{ secrets.GITHUB_TOKEN }}
