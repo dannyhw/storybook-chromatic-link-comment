@@ -56,7 +56,7 @@ permissions:
   pull-requests: write
 
 jobs:
-  chromatic-link-comment:
+  chromatic-deployment:
     runs-on: ubuntu-latest
     steps:
       - name: Publish to Chromatic
@@ -66,7 +66,7 @@ jobs:
           exitOnceUploaded: true
 
       - name: Publish Storybook Link in the comments
-        uses: dannyhw/storybook-chromatic-link-comment@v0.4
+        uses: dannyhw/storybook-chromatic-link-comment@v0.7
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           review-url: ${{ steps.chromatic.outputs.url }}
@@ -91,7 +91,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Storybook Link
-        uses: dannyhw/storybook-chromatic-link-comment@v0.4
+        uses: dannyhw/storybook-chromatic-link-comment@v0.7
         with:
           app-id: ${{ secrets.CHROMATIC_APP_ID }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
