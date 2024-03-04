@@ -1,8 +1,6 @@
 name: 'test on pr'
 
-on:
-  pull_request:
-    types: opened
+on: pull_request
 
 permissions:
   pull-requests: write
