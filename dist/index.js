@@ -104,7 +104,7 @@ ${reviewUrl
             const existingComment = comments.find(({ body }) => body === null || body === void 0 ? void 0 : body.includes(commentFindBy));
             if (!existingComment && comments.length < 100) {
                 core.info(`Leaving comment: ${comment}`);
-                octokit.issues.createComment({
+                yield octokit.issues.createComment({
                     issue_number: number,
                     owner,
                     repo,
@@ -112,7 +112,8 @@ ${reviewUrl
                 });
             }
             else if (existingComment) {
-                octokit.issues.updateComment({
+                core.info(`attempting to update existing comment: ${existingComment.id}`);
+                yield octokit.issues.updateComment({
                     comment_id: existingComment.id,
                     owner,
                     repo,
