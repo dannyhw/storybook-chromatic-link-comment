@@ -24,20 +24,28 @@ async function run(): Promise<void> {
     const {
       repo: {repo, owner},
       issue: {number},
-      payload
+      ref
     } = github.context
 
-    const branchName = payload.pull_request?.head.ref
-      .replace('refs/heads/', '')
-      .replace('/', '-')
+    let branch: string | undefined
+    if (github.context.eventName === 'pull_request') {
+      branch = process.env.GITHUB_HEAD_REF
+    } else {
+      // Other events where we have to extract branch from the ref
+      // Ref example: refs/heads/master, refs/tags/X
+      const branchParts = ref.split('/')
+      branch = branchParts.slice(2).join('/')
+    }
+
+    const branchName = branch?.replace('refs/heads/', '').replace('/', '-')
 
     if (!branchName) throw new Error('Could not find branch name')
 
     // fallback to using the app-id based url
     const buildUrl =
       buildUrlInput ?? `https://www.chromatic.com/build?appId=${appId}`
-    const storybookUrl =
-      storybookUrlInput ?? `https://${branchName}--${appId}.chromatic.com`
+    const branchStorybookUrl = `https://${branchName}--${appId}.chromatic.com`
+    const storybookUrl = storybookUrlInput ?? branchStorybookUrl
 
     const octokit = new Octokit({auth: `token ${token}`, request: {fetch}})
 
@@ -59,6 +67,7 @@ ${
 }
 - the [latest build on chromatic](${buildUrl})
 - the [full storybook](${storybookUrl})
+- the [branch specific storybook](${branchStorybookUrl})
 `
 
     const {data: comments} = await octokit.issues.listComments({
@@ -77,6 +86,13 @@ ${
 
       octokit.issues.createComment({
         issue_number: number,
+        owner,
+        repo,
+        body: comment
+      })
+    } else if (existingComment) {
+      octokit.issues.updateComment({
+        comment_id: existingComment.id,
         owner,
         repo,
         body: comment
