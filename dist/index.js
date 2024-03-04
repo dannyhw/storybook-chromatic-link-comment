@@ -71,7 +71,7 @@ function run() {
                 const branchParts = ref.split('/');
                 branch = branchParts.slice(2).join('/');
             }
-            const branchName = branch === null || branch === void 0 ? void 0 : branch.replace('refs/heads/', '').replace('/', '-');
+            const branchName = branch === null || branch === void 0 ? void 0 : branch.replace('refs/heads/', '').replace('/', '-').substr(0, 37);
             if (!branchName)
                 throw new Error('Could not find branch name');
             // fallback to using the app-id based url
