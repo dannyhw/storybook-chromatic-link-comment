@@ -96,7 +96,7 @@ ${reviewUrl
 - the [full storybook](${storybookUrl})
 - the [branch specific storybook](${branchStorybookUrl})
 `;
-            core.info(`Fetching comments for issue: ${number}`);
+            core.info(`Fetching comments for issue: ${github.context.issue.number}`);
             const { data: comments } = yield octokit.issues.listComments({
                 owner,
                 repo,
