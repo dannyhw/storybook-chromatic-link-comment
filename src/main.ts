@@ -27,6 +27,7 @@ async function run(): Promise<void> {
       ref
     } = github.context
 
+    core.debug(`Ctx: ${JSON.stringify(github.context)}`)
     let branch: string | undefined
     if (github.context.eventName === 'pull_request') {
       branch = process.env.GITHUB_HEAD_REF
@@ -70,9 +71,16 @@ ${
 }
 - the [latest build on chromatic](${buildUrl})
 - the [full storybook](${storybookUrl})
+${
+  appId
+    ? `
 - the [branch specific storybook](${branchStorybookUrl})
 `
+    : ``
+}
+`
 
+    core.debug(`owner: ${owner}, repo: ${repo}, issue_number: ${number}`)
     const {data: comments} = await octokit.issues.listComments({
       owner,
       repo,
@@ -80,6 +88,7 @@ ${
       per_page: 100
     })
 
+    core.debug(`Comments: ${comments ? JSON.stringify(comments) : comments}`)
     const existingComment = comments.find(({body}) =>
       body?.includes(commentFindBy)
     )
