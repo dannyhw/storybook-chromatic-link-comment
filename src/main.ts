@@ -27,7 +27,11 @@ async function run(): Promise<void> {
       ref
     } = github.context
 
-    core.debug(`Ctx: ${JSON.stringify(github.context)}`)
+    if (!number)
+      throw new Error(
+        'No issue number found preventing any comment from being added or updated. This will happen if your action is ran on push and not on a pull_request event.'
+      )
+
     let branch: string | undefined
     if (github.context.eventName === 'pull_request') {
       branch = process.env.GITHUB_HEAD_REF
@@ -88,7 +92,6 @@ ${
       per_page: 100
     })
 
-    core.debug(`Comments: ${comments ? JSON.stringify(comments) : comments}`)
     const existingComment = comments.find(({body}) =>
       body?.includes(commentFindBy)
     )

@@ -61,7 +61,8 @@ function run() {
                 throw new Error('app-id is required, when build-url and storybook-url are not provided');
             }
             const { repo: { repo, owner }, issue: { number }, ref } = github.context;
-            core.debug(`Ctx: ${JSON.stringify(github.context)}`);
+            if (!number)
+                throw new Error('No issue number found preventing any comment from being added or updated. This will happen if your action is ran on push and not on a pull_request event.');
             let branch;
             if (github.context.eventName === 'pull_request') {
                 branch = process.env.GITHUB_HEAD_REF;
@@ -107,7 +108,6 @@ ${appId
                 issue_number: number,
                 per_page: 100
             });
-            core.debug(`Comments: ${comments ? JSON.stringify(comments) : comments}`);
             const existingComment = comments.find(({ body }) => body === null || body === void 0 ? void 0 : body.includes(commentFindBy));
             if (!existingComment && comments.length < 100) {
                 core.info(`Leaving comment: ${comment}`);
