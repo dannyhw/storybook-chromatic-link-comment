@@ -64,6 +64,7 @@ async function run(): Promise<void> {
 
     if (!branchName) throw new Error('Could not find branch name')
 
+    // Do not use ?? as the default input is an empty string
     // fallback to using the app-id based url
     const buildUrl =
       buildUrlInput || `https://www.chromatic.com/build?appId=${appId}`
