@@ -31,6 +31,7 @@ async function run(): Promise<void> {
 
     if (!number) {
       try {
+        // Based on https://github.com/orgs/community/discussions/27071#discussioncomment-4943026
         const result =
           await octokit.rest.repos.listPullRequestsAssociatedWithCommit({
             commit_sha: sha,

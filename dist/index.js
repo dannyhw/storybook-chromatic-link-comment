@@ -60,6 +60,7 @@ function run() {
             const octokit = github.getOctokit(token);
             if (!number) {
                 try {
+                    // Based on https://github.com/orgs/community/discussions/27071#discussioncomment-4943026
                     const result = yield octokit.rest.repos.listPullRequestsAssociatedWithCommit({
                         commit_sha: sha,
                         owner,
