@@ -1,7 +1,5 @@
 import * as core from '@actions/core'
 import * as github from '@actions/github'
-import {Octokit} from '@octokit/rest'
-import fetch from 'node-fetch'
 
 async function run(): Promise<void> {
   try {
@@ -23,14 +21,32 @@ async function run(): Promise<void> {
 
     const {
       repo: {repo, owner},
-      issue: {number},
+      sha,
       ref
     } = github.context
 
-    if (!number)
-      throw new Error(
-        'No issue number found preventing any comment from being added or updated. This will happen if your action is ran on push and not on a pull_request event.'
-      )
+    let {number} = github.context.issue
+
+    const octokit = github.getOctokit(token)
+
+    if (!number) {
+      try {
+        // Based on https://github.com/orgs/community/discussions/27071#discussioncomment-4943026
+        const result =
+          await octokit.rest.repos.listPullRequestsAssociatedWithCommit({
+            commit_sha: sha,
+            owner,
+            repo
+          })
+
+        number = result.data[0].number
+      } catch (e) {
+        if (e instanceof Error) core.error(e)
+        throw new Error(
+          'No issue number found preventing any comment from being added or updated. This will happen if your action is ran on push and an associated PR is not found.'
+        )
+      }
+    }
 
     let branch: string | undefined
     if (github.context.eventName === 'pull_request') {
@@ -49,13 +65,12 @@ async function run(): Promise<void> {
 
     if (!branchName) throw new Error('Could not find branch name')
 
+    // Do not use ?? as the default input is an empty string
     // fallback to using the app-id based url
     const buildUrl =
-      buildUrlInput ?? `https://www.chromatic.com/build?appId=${appId}`
+      buildUrlInput || `https://www.chromatic.com/build?appId=${appId}`
     const branchStorybookUrl = `https://${branchName}--${appId}.chromatic.com`
-    const storybookUrl = storybookUrlInput ?? branchStorybookUrl
-
-    const octokit = new Octokit({auth: `token ${token}`, request: {fetch}})
+    const storybookUrl = storybookUrlInput || branchStorybookUrl
 
     core.debug(`Using appid: ${appId}`) // debug is only output if you set the secret `ACTIONS_STEP_DEBUG` to true
 
@@ -85,7 +100,7 @@ ${
 `
 
     core.debug(`owner: ${owner}, repo: ${repo}, issue_number: ${number}`)
-    const {data: comments} = await octokit.issues.listComments({
+    const {data: comments} = await octokit.rest.issues.listComments({
       owner,
       repo,
       issue_number: number,
@@ -99,7 +114,7 @@ ${
     if (!existingComment && comments.length < 100) {
       core.info(`Leaving comment: ${comment}`)
 
-      await octokit.issues.createComment({
+      await octokit.rest.issues.createComment({
         issue_number: number,
         owner,
         repo,
@@ -107,7 +122,7 @@ ${
       })
     } else if (existingComment) {
       core.info(`attempting to update existing comment: ${existingComment.id}`)
-      await octokit.issues.updateComment({
+      await octokit.rest.issues.updateComment({
         comment_id: existingComment.id,
         owner,
         repo,
