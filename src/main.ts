@@ -5,18 +5,13 @@ async function run(): Promise<void> {
   try {
     const token = core.getInput('github-token')
     const appId: string = core.getInput('app-id')
-    const reviewUrl: string = core.getInput('review-url')
-    const buildUrlInput: string = core.getInput('build-url')
-    const storybookUrlInput: string = core.getInput('storybook-url')
 
     if (!token) {
       throw new Error('github-token is required')
     }
 
-    if ((!buildUrlInput || !storybookUrlInput) && !appId) {
-      throw new Error(
-        'app-id is required, when build-url and storybook-url are not provided'
-      )
+    if (!appId) {
+      throw new Error('app-id is required')
     }
 
     const {
@@ -67,36 +62,16 @@ async function run(): Promise<void> {
 
     // Do not use ?? as the default input is an empty string
     // fallback to using the app-id based url
-    const buildUrl =
-      buildUrlInput || `https://www.chromatic.com/build?appId=${appId}`
     const branchStorybookUrl = `https://${branchName}--${appId}.chromatic.com`
-    const storybookUrl = storybookUrlInput || branchStorybookUrl
 
     core.debug(`Using appid: ${appId}`) // debug is only output if you set the secret `ACTIONS_STEP_DEBUG` to true
 
-    const commentFindBy = `<!-- Created by storybook-chromatic-link-comment -->`
+    const commentFindBy = `<!-- Created by storybook-link-comment -->`
 
     const comment = `${commentFindBy}
-## 🔍 Visual review for your branch is published 🔍
+## Storybook Preview
 
-Here are the links to:
-
-${
-  reviewUrl
-    ? `
-- the [Visual Review Page](${reviewUrl})
-`
-    : ``
-}
-- the [latest build on chromatic](${buildUrl})
-- the [full storybook](${storybookUrl})
-${
-  appId
-    ? `
-- the [branch specific storybook](${branchStorybookUrl})
-`
-    : ``
-}
+Click [here](${branchStorybookUrl}) to access the Storybook preview for this branch.
 `
 
     core.debug(`owner: ${owner}, repo: ${repo}, issue_number: ${number}`)
